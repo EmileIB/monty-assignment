@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Black">
+    <option name="enabledOnReformat" value="true" />
+    <option name="enabledOnSave" value="true" />
+    <option name="pathToExecutable" value="/opt/homebrew/bin/black" />
+    <option name="sdkName" value="Poetry (monty-assignment)" />
+  </component>
+  <component name="DiscordProjectSettings">
+    <option name="show" value="ASK" />
+    <option name="description" value="" />
+  </component>
+  <component name="ProjectRootManager" version="2" project-jdk-name="Poetry (monty-assignment)" project-jdk-type="Python SDK" />
+</project>
