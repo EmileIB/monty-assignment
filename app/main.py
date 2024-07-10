@@ -33,4 +33,4 @@ app.include_router(v1_router)
 # app.mount("/admin", admin_app, name="admin")
 
 # Static Files
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/uploads", StaticFiles(directory="static/uploads"), name="uploads")
