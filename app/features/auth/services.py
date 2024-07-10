@@ -11,10 +11,11 @@ from passlib.context import CryptContext
 from app.core.settings import settings
 from app.common.exceptions import UnauthorizedException, BadRequestException
 
-from app.features.users.services import UserService
+from app.features.users.dao import UserDao
 from .schemas import TokenData, Token, RegisterData
 
 from app.features.users.models import UserDoc
+from app.features.users.schemas import UserOut, UserOutWithToken
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -32,7 +33,7 @@ class AuthService:
 
     @staticmethod
     async def authenticate_user(username: str, password: str) -> UserDoc | None:
-        user = await UserService.get_one({"username": username})
+        user = await UserDao.get_one({"username": username})
         if not user or not AuthService.verify_password(password, user.hashed_password):
             return None
         return user
@@ -65,21 +66,10 @@ class AuthService:
             token_data = TokenData(username=username)
         except InvalidTokenError:
             raise credentials_exception
-        user = await UserService.get_one({"username": token_data.username})
+        user = await UserDao.get_one({"username": token_data.username})
         if user is None:
             raise credentials_exception
         return user
-
-    @staticmethod
-    async def get_current_active_user(
-        get_current_user_coroutine: Annotated[
-            Coroutine[any, any, UserDoc], Depends(get_current_user)
-        ],
-    ):
-        current_user = await get_current_user_coroutine
-        if current_user.disabled:
-            raise BadRequestException("Inactive user")
-        return current_user
 
     @staticmethod
     async def login_for_access_token(login_data: OAuth2PasswordRequestForm) -> Token:
@@ -88,22 +78,29 @@ class AuthService:
         )
         if not user:
             raise UnauthorizedException("Incorrect username or password")
+        return await AuthService.generate_token(user.username)
+
+    @staticmethod
+    async def generate_token(username: str) -> Token:
         access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token = AuthService.create_access_token(
-            data={"sub": user.username}, expires_delta=access_token_expires
+            data={"sub": username}, expires_delta=access_token_expires
         )
         return Token(access_token=access_token, token_type="bearer")
 
     @staticmethod
-    async def register(user_data: RegisterData) -> UserDoc:
-        existing_user = await UserService.get_one({"username": user_data.username})
+    async def register(user_data: RegisterData) -> UserOutWithToken:
+        existing_user = await UserDao.get_one({"username": user_data.username})
         if existing_user:
             raise BadRequestException("Username already exists")
 
-        new_user = UserDoc(
+        new_user = await UserDao.create(
             username=user_data.username,
             full_name=user_data.full_name,
             hashed_password=AuthService.get_password_hash(user_data.password),
         )
 
-        return await UserDoc.insert_one(new_user)
+        return UserOutWithToken(
+            **UserOut.model_validate(new_user).model_dump(),
+            token=await AuthService.generate_token(new_user.username),
+        )
