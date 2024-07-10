@@ -4,12 +4,14 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    # Required settings
     MONGO_URL: str
     DB_NAME: str
 
-    # Non required settings
     API_VERSION: str = "v1"
+
+    SECRET_KEY: str
+    ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
 
     model_config = SettingsConfigDict(env_file=".env")
 

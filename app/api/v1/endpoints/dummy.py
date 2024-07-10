@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, Response
 
-from app.dummy.services import DummyService
-from app.dummy.schemas import DummyIn, DummyOut
+from app.features.dummy.services import DummyService
+from app.features.dummy.schemas import DummyIn, DummyOut
 
 from app.common.schemas import MongoObjectID
 

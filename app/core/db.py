@@ -1,11 +1,12 @@
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
     AsyncIOMotorDatabase,
-    AsyncIOMotorCollection,  # noqa
 )
 
 from beanie import init_beanie
-from app.dummy.models import DummyDoc
+
+from app.features.dummy.models import DummyDoc
+from app.features.users.models import UserDoc
 
 from app.core.settings import settings
 
@@ -15,7 +16,7 @@ db_client: AsyncIOMotorClient | None = None
 async def connect_and_init_db():
     global db_client
     db_client = AsyncIOMotorClient(settings.MONGO_URL)
-    await init_beanie(db_client[settings.DB_NAME], document_models=[DummyDoc])
+    await init_beanie(db_client[settings.DB_NAME], document_models=[DummyDoc, UserDoc])
 
 
 async def get_db() -> AsyncIOMotorDatabase:

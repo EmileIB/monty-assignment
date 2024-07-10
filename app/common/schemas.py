@@ -11,6 +11,7 @@ from pydantic_core import core_schema
 
 class DBTable(str, Enum):
     Dummy = "dummy"
+    Users = "users"
 
 
 class MongoObjectID(PydanticObjectId):

@@ -7,4 +7,4 @@ class DummyDoc(Document):
     description: str
 
     class Settings:
-        name = DBTable.Dummy
+        name: DBTable.Dummy
