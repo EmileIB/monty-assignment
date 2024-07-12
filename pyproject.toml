@@ -15,6 +15,7 @@ beanie = "^1.26.0"
 pyjwt = "^2.8.0"
 passlib = {extras = ["bcrypt"], version = "^1.7.4"}
 aiofiles = "^24.1.0"
+stripe = "^10.2.0"
 
 
 [build-system]

@@ -6,6 +6,7 @@ class UserDoc(Document):
     username: str
     full_name: str
     hashed_password: str
+    is_admin: bool
 
     class Settings:
         name = DBTable.Users

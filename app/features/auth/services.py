@@ -9,7 +9,11 @@ from typing import Annotated, Coroutine
 from passlib.context import CryptContext
 
 from app.core.settings import settings
-from app.common.exceptions import UnauthorizedException, BadRequestException
+from app.common.exceptions import (
+    UnauthorizedException,
+    BadRequestException,
+    ForbiddenException,
+)
 
 from app.features.users.dao import UserDao
 from .schemas import TokenData, Token, RegisterData
@@ -72,6 +76,17 @@ class AuthService:
         return user
 
     @staticmethod
+    async def get_current_admin_user(
+        get_current_user_coroutine: Annotated[
+            Coroutine[any, any, UserDoc], Depends(get_current_user)
+        ],
+    ):
+        current_user = await get_current_user_coroutine
+        if not current_user.is_admin:
+            raise ForbiddenException("Forbidden")
+        return current_user
+
+    @staticmethod
     async def login_for_access_token(login_data: OAuth2PasswordRequestForm) -> Token:
         user = await AuthService.authenticate_user(
             login_data.username, login_data.password
@@ -90,17 +105,31 @@ class AuthService:
 
     @staticmethod
     async def register(user_data: RegisterData) -> UserOutWithToken:
-        existing_user = await UserDao.get_one({"username": user_data.username})
-        if existing_user:
+        _user = await UserDao.get_one({"username": user_data.username})
+        if _user:
             raise BadRequestException("Username already exists")
 
-        new_user = await UserDao.create(
+        _user = await UserDao.create(
             username=user_data.username,
             full_name=user_data.full_name,
             hashed_password=AuthService.get_password_hash(user_data.password),
+            is_admin=False,
         )
 
         return UserOutWithToken(
-            **UserOut.model_validate(new_user).model_dump(),
-            token=await AuthService.generate_token(new_user.username),
+            **UserOut.model_validate(_user).model_dump(),
+            token=await AuthService.generate_token(_user.username),
         )
+
+    @staticmethod
+    async def create_default_admin():
+        _user = await UserDao.get_one({"username": settings.ADMIN_USERNAME})
+        if _user:
+            return
+        await UserDao.create(
+            username=settings.ADMIN_USERNAME,
+            full_name="Admin",
+            hashed_password=AuthService.get_password_hash(settings.ADMIN_PASSWORD),
+            is_admin=True,
+        )
+        return

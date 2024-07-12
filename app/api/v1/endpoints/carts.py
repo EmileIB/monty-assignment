@@ -8,11 +8,13 @@ from app.features.carts.schemas import CartItemOut, CartItemUpdate, CartItemIn
 
 from app.common.schemas import MongoObjectID
 
+from app.features.carts.schemas import CheckoutCartOut
+
 
 router = APIRouter(tags=["Cart"], prefix="/cart")
 
 
-@router.get("/items", status_code=status.HTTP_201_CREATED)
+@router.get("/items", status_code=status.HTTP_200_OK)
 async def get_cart_items(
     current_user: Annotated[UserDoc, Depends(AuthService.get_current_user)]
 ) -> list[CartItemOut]:
@@ -40,3 +42,18 @@ async def add_cart_item(
     current_user: Annotated[UserDoc, Depends(AuthService.get_current_user)],
 ) -> CartItemOut:
     return await CartItemService.add_cart_item(item_data=item_data, user=current_user)
+
+
+@router.delete("/items/{cart_item_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_cart_item(
+    cart_item_id: MongoObjectID,
+    current_user: Annotated[UserDoc, Depends(AuthService.get_current_user)],
+):
+    await CartItemService.delete_cart_item(cart_item_id, user=current_user)
+
+
+@router.post("/checkout", status_code=status.HTTP_200_OK)
+async def create_checkout_session(
+    current_user: Annotated[UserDoc, Depends(AuthService.get_current_user)]
+) -> CheckoutCartOut:
+    return await CartItemService.checkout_cart(current_user)

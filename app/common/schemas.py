@@ -16,6 +16,7 @@ class DBTable(str, Enum):
     Files = "files"
     CartItems = "cart_items"
     Carts = "carts"
+    Orders = "orders"
 
 
 class PydanticObjectId(DefaultPydanticObjectId):

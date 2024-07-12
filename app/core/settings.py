@@ -13,6 +13,14 @@ class Settings(BaseSettings):
     ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
 
+    STRIPE_SECRET_KEY: str
+    WEBHOOK_SECRET: str
+
+    UPLOADS_URL: str
+
+    ADMIN_USERNAME: str
+    ADMIN_PASSWORD: str
+
     model_config = SettingsConfigDict(env_file=".env")
 
 

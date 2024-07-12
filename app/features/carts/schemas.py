@@ -21,3 +21,8 @@ class CartItemOut(CartItemBase):
 
 class CartItemUpdate(CartItemBase):
     pass
+
+
+class CheckoutCartOut(BaseModel):
+    url: str
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)

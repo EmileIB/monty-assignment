@@ -16,17 +16,9 @@ from app.features.upload.services import UploadService
 class ProductService:
 
     @staticmethod
-    async def get_products(user: UserDoc, sold_by_me: bool = True) -> list[ProductOut]:
+    async def get_products() -> list[ProductOut]:
         return [
-            ProductOut.model_validate(product)
-            for product in await ProductDao.get_all(
-                filters=(
-                    {"user._id": user.id}
-                    if sold_by_me
-                    else {"user._id": {"$ne": user.id}}
-                ),
-                fetch_links=True,
-            )
+            ProductOut.model_validate(product) for product in await ProductDao.get_all()
         ]
 
     @staticmethod
@@ -37,7 +29,7 @@ class ProductService:
         _product = await ProductDao.create(
             **product_data.model_dump(),
             user=user,
-            images=await UploadService.upload_images(images)
+            images=await UploadService.upload_images(images),
         )
 
         return ProductOut.model_validate(_product)
@@ -61,10 +53,9 @@ class ProductService:
         product_id: MongoObjectID,
         *,
         update_data: ProductUpdate,
-        user_id: MongoObjectID | None = None
     ) -> ProductOut:
         _product = await ProductDao.get_one(
-            {"_id": product_id, "user._id": user_id},
+            {"_id": product_id},
             fetch_links=True,
         )
 

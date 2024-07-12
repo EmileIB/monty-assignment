@@ -8,28 +8,24 @@ from app.features.products.schemas import ProductIn, ProductOut, ProductUpdate
 
 from app.common.schemas import MongoObjectID
 
-router = APIRouter(tags=["Product"], prefix="/product")
+router = APIRouter(tags=["Product"], prefix="/products")
 
 
 @router.get("", status_code=status.HTTP_201_CREATED)
-async def get_products(
-    current_user: Annotated[UserDoc, Depends(AuthService.get_current_user)],
-    sold_by_me: bool = True,
-) -> list[ProductOut]:
-    return await ProductService.get_products(user=current_user, sold_by_me=sold_by_me)
+async def get_products() -> list[ProductOut]:
+    return await ProductService.get_products()
 
 
 @router.get("/{product_id}", status_code=status.HTTP_200_OK)
-async def get_product_by_id(
-    _current_user: Annotated[UserDoc, Depends(AuthService.get_current_user)],
-    product_id: MongoObjectID,
-) -> ProductOut:
+async def get_product_by_id(product_id: MongoObjectID) -> ProductOut:
     return await ProductService.get_product_by_id(product_id)
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", status_code=status.HTTP_201_CREATED, summary="Create Product - Admin Only"
+)
 async def create_product(
-    current_user: Annotated[UserDoc, Depends(AuthService.get_current_user)],
+    current_user: Annotated[UserDoc, Depends(AuthService.get_current_admin_user)],
     name: Annotated[str, Form(...)],
     price: Annotated[float, Form(...)],
     description: Annotated[str, Form(...)],
@@ -42,21 +38,28 @@ async def create_product(
 
 
 @router.delete(
-    "/{product_id}", status_code=status.HTTP_204_NO_CONTENT, response_class=Response
+    "/{product_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    summary="Delete Product By Id - Admin Only",
 )
 async def delete_product_by_id(
-    _current_user: Annotated[UserDoc, Depends(AuthService.get_current_user)],
+    _current_user: Annotated[UserDoc, Depends(AuthService.get_current_admin_user)],
     product_id: MongoObjectID,
 ) -> None:
     await ProductService.delete_product_by_id(product_id)
 
 
-@router.put("/{product_id}", status_code=status.HTTP_200_OK)
+@router.put(
+    "/{product_id}",
+    status_code=status.HTTP_200_OK,
+    summary="Update Product - Admin Only",
+)
 async def update_product(
-    current_user: Annotated[UserDoc, Depends(AuthService.get_current_user)],
+    _current_user: Annotated[UserDoc, Depends(AuthService.get_current_admin_user)],
     product_data: Annotated[ProductUpdate, Body(...)],
     product_id: MongoObjectID,
 ) -> ProductOut:
     return await ProductService.update_product(
-        product_id=product_id, update_data=product_data, user_id=current_user.id
+        product_id=product_id, update_data=product_data
     )

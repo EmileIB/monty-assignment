@@ -5,6 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.v1.router import router as v1_router
 
 from app.core.db import connect_and_init_db, close_db_connection
+from app.features.auth.services import AuthService
 
 APP_TITLE = "Monty - Online Marketplace Platform"
 
@@ -23,6 +24,7 @@ app.add_middleware(
 
 # Database Connection
 app.add_event_handler("startup", connect_and_init_db)
+app.add_event_handler("startup", AuthService.create_default_admin)
 app.add_event_handler("shutdown", close_db_connection)
 
 # User Routes
