@@ -1,5 +1,5 @@
 
-# FastAPI Project
+# Monty Assignment
 
 This is a FastAPI project setup guide. Follow the steps below to get your development environment up and running.
 
